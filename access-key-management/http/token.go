@@ -4,6 +4,8 @@ import (
 	"akm/dbops/model"
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func (s *ServiceOps) createTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,12 +16,6 @@ func (s *ServiceOps) createTokenHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Validate the request
-	// if err := validateTokenRequest(tokenRequest); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-
 	token, err := s.tokenOps.Create(r.Context(), &tokenRequest)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to create token")
@@ -27,6 +23,40 @@ func (s *ServiceOps) createTokenHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Return the token in the response
+	respondWithJSON(w, http.StatusOK, APIResponse{
+		Success: true,
+		Data:    token,
+	})
+}
+
+func (s *ServiceOps) getTokensHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the tokens from the database
+	tokens, err := s.tokenOps.GetAll(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve tokens")
+		return
+	}
+
+	// Return the tokens in the response
+	respondWithJSON(w, http.StatusOK, APIResponse{
+		Success: true,
+		Data:    tokens,
+	})
+}
+
+func (s *ServiceOps) getTokenPlan(w http.ResponseWriter, r *http.Request) {
+	// Get the token key from the URL parameters
+	vars := mux.Vars(r)
+	key := vars["key"]
+
+	// Retrieve the token plan based on the key
+	token, err := s.tokenOps.GetByKey(r.Context(), key)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve token plan")
+		return
+	}
+
+	// Return the token plan in the response
 	respondWithJSON(w, http.StatusOK, APIResponse{
 		Success: true,
 		Data:    token,

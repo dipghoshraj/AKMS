@@ -1,20 +1,19 @@
 package dbops
 
 import (
-	"sync"
+	"gorm.io/gorm"
 )
 
-var instance *OpsManager
-var once sync.Once
-
-type tokenOps struct{}
+type tokenOps struct {
+	db *gorm.DB
+}
 
 type OpsManager struct {
 	TokenOps TokenOps
 }
 
-func NewOpsManager() *OpsManager {
+func NewOpsManager(db *gorm.DB) *OpsManager {
 	return &OpsManager{
-		TokenOps: &tokenOps{},
+		TokenOps: &tokenOps{db: db},
 	}
 }

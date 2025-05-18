@@ -1,6 +1,7 @@
 package main
 
 import (
+	"akm/dbops"
 	"akm/store"
 	"fmt"
 	"log"
@@ -24,7 +25,9 @@ func main() {
 	fmt.Println("Hello, World!")
 	store.InitDB()
 
-	router := setupRouter()
+	repoOps := dbops.NewOpsManager(store.DataBase)
+	service := http.NewServiceOps(repoOps)
+	router := setupRouter(service)
 
 	// Start server
 	server := &net.Server{
