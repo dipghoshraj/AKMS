@@ -3,6 +3,8 @@ package store
 import (
 	"akm/config"
 	"fmt"
+	"log"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -29,6 +31,16 @@ func InitDB() {
 	if err != nil {
 		panic("failed to connect database")
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("failed to get raw DB object: %v", err)
+	}
+
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(30 * time.Minute)
+	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
 
 	DataBase = db
 	fmt.Println("Database connection established successfully.")

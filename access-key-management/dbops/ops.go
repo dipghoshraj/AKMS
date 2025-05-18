@@ -1,7 +1,6 @@
 package dbops
 
 import (
-	"log"
 	"sync"
 )
 
@@ -14,22 +13,8 @@ type OpsManager struct {
 	TokenOps TokenOps
 }
 
-func NewAppRepository() TokenOps {
-	return &tokenOps{}
-}
-
-func InitOpsManager() {
-	once.Do(func() {
-		instance = &OpsManager{
-			TokenOps: &tokenOps{},
-		}
-		log.Println("RepositoryManager initialized")
-	})
-}
-
-func GetOpsManager() *OpsManager {
-	if instance == nil {
-		InitOpsManager()
+func NewOpsManager() *OpsManager {
+	return &OpsManager{
+		TokenOps: &tokenOps{},
 	}
-	return instance
 }

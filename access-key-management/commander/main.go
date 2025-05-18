@@ -3,15 +3,43 @@ package main
 import (
 	"akm/store"
 	"fmt"
+	"log"
+	"time"
+
+	"akm/config"
+	"akm/http"
+	net "net/http"
+
+	"github.com/gorilla/mux"
 )
+
+func setupRouter(service *http.ServiceOps) *mux.Router {
+	router := mux.NewRouter()
+	http.SetupRoutes(router, service)
+
+	return router
+}
 
 func main() {
 	fmt.Println("Hello, World!")
 	store.InitDB()
-	// This is a simple Go program that prints "Hello, World!" to the console.
-	// It serves as a starting point for building a command-line application.
-	// You can add more functionality and features as needed.
-	// For example, you can use the "flag" package to parse command-line arguments,
-	// or use the "os" package to interact with the file system.
-	// Happy coding!
+
+	router := setupRouter()
+
+	// Start server
+	server := &net.Server{
+		Addr:         ":" + config.GetEnv("SERVER_PORT", "8080"),
+		Handler:      router,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	// Start server in a goroutine
+	go func() {
+		log.Printf("Starting server on port %s", config.GetEnv("SERVER_PORT", "8080"))
+		if err := server.ListenAndServe(); err != nil && err != net.ErrServerClosed {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
 }
