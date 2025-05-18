@@ -11,3 +11,14 @@ type Token struct {
 	CreatedAt          time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt          time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
+
+type TokenCreateInput struct {
+	Hashkey            string    `json:"hashkey" binding:"required"`
+	RateLimitPerMinute int64     `json:"rate_limit_per_minute" binding:"required"`
+	ExpiresAt          time.Time `json:"expires_at" binding:"required"`
+}
+
+type TokenUpdateInput struct {
+	RateLimitPerMinute int64  `json:"rate_limit_per_minute" binding:"required"`
+	ExpiresAt          string `json:"expires_at" binding:"required"`
+}
