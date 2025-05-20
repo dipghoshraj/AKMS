@@ -13,9 +13,8 @@ type Token struct {
 }
 
 type TokenCreateInput struct {
-	Hashkey            string    `json:"hashkey" binding:"required"`
-	RateLimitPerMinute int64     `json:"rate_limit_per_minute" binding:"required"`
-	ExpiresAt          time.Time `json:"expires_at" binding:"required"`
+	RateLimitPerMinute int64 `json:"rate_limit_per_minute" binding:"required"`
+	ExpiresAt          int   `json:"expires_at" binding:"required"`
 }
 
 type TokenUpdateInput struct {

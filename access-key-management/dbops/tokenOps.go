@@ -6,6 +6,10 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type TokenOps interface {
@@ -21,12 +25,19 @@ func generateHash(tokenKey string) string {
 
 func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (*model.Token, error) {
 
-	hash := generateHash(input.Hashkey)
+	hashkey, err := uuid.NewRandom()
+	if err != nil {
+		fmt.Printf("Error generating UUID: %v\n", err)
+		return nil, err
+	}
+
+	hash := generateHash(hashkey.String())
+	expiresAt := time.Now().Add(time.Duration(input.ExpiresAt) * time.Minute)
 
 	token := &model.Token{
 		Hashkey:            hash,
 		RateLimitPerMinute: input.RateLimitPerMinute,
-		ExpiresAt:          input.ExpiresAt,
+		ExpiresAt:          expiresAt,
 		Disabled:           false,
 	}
 
@@ -41,6 +52,8 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 	if err := store.DataBase.Find(&token).Error; err != nil {
 		return nil, err
 	}
+
+	token.Hashkey = hashkey.String() // Overwrite just for return
 
 	return token, nil
 }
