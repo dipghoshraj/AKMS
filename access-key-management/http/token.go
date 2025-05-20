@@ -4,8 +4,6 @@ import (
 	"akm/dbops/model"
 	"encoding/json"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 func (s *ServiceOps) createTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,11 +44,10 @@ func (s *ServiceOps) getTokensHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *ServiceOps) getTokenPlan(w http.ResponseWriter, r *http.Request) {
 	// Get the token key from the URL parameters
-	vars := mux.Vars(r)
-	key := vars["key"]
+	accessKey := r.Header.Get("x-api-key")
 
 	// Retrieve the token plan based on the key
-	token, err := s.tokenOps.GetByKey(r.Context(), key)
+	token, err := s.tokenOps.GetByKey(r.Context(), accessKey)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to retrieve token plan")
 		return

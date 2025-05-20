@@ -28,11 +28,13 @@ type APIResponse struct {
 func SetupRoutes(router *mux.Router, service *ServiceOps) {
 	// Initialize the router
 	// Define your routes here
-	protected := router.PathPrefix("/api").Subrouter()
+
+	router.HandleFunc("/key/info", service.getTokenPlan).Methods("GET")
+
+	protected := router.PathPrefix("/admin").Subrouter()
 	protected.Use(JWTMiddleware)
-	protected.HandleFunc("/admin/key", service.createTokenHandler).Methods("POST")
-	protected.HandleFunc("/admin/key", service.getTokensHandler).Methods("GET")
-	protected.HandleFunc("/admin/plan/{key}", service.getTokenPlan).Methods("GET")
+	protected.HandleFunc("/key", service.createTokenHandler).Methods("POST")
+	protected.HandleFunc("/key", service.getTokensHandler).Methods("GET")
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {

@@ -69,9 +69,10 @@ func (to *tokenOps) GetAll(ctx context.Context) ([]*model.Token, error) {
 
 func (to *tokenOps) GetByKey(ctx context.Context, key string) (*model.Token, error) {
 	var token model.Token
-	if err := to.db.WithContext(ctx).Where("hashkey = ?", key).First(&token).Error; err != nil {
+
+	hash := generateHash(key)
+	if err := to.db.WithContext(ctx).Where("hashkey = ?", hash).First(&token).Error; err != nil {
 		return nil, err
 	}
-
 	return &token, nil
 }
