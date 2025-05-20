@@ -1,10 +1,12 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 var jwtSecret = []byte("whatever")
@@ -39,6 +41,16 @@ func JWTMiddleware(next http.Handler) http.Handler {
 		}
 
 		// You can pass claims via context here if needed
+		next.ServeHTTP(w, r)
+	})
+}
+
+func RequestIDMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqID := uuid.New().String()
+		ctx := context.WithValue(r.Context(), "reqID", reqID)
+		r = r.WithContext(ctx)
+		w.Header().Set("X-Request-ID", reqID)
 		next.ServeHTTP(w, r)
 	})
 }

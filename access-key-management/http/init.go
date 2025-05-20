@@ -28,6 +28,7 @@ type APIResponse struct {
 func SetupRoutes(router *mux.Router, service *ServiceOps) {
 	// Initialize the router
 	// Define your routes here
+	router.Use(RequestIDMiddleware)
 
 	router.HandleFunc("/key/info", service.getTokenPlan).Methods("GET")
 	router.HandleFunc("/key/disable", service.disableTokenHandler).Methods("POST")

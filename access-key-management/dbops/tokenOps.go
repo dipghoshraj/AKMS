@@ -2,7 +2,7 @@ package dbops
 
 import (
 	"akm/dbops/model"
-	"akm/store"
+	"akm/dbops/producer"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -48,11 +48,28 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 		return nil, err
 	}
 
-	if err := store.DataBase.Find(&token).Error; err != nil {
+	if err := to.db.Find(&token).Error; err != nil {
+		return nil, err
+	}
+	reqID, ok := ctx.Value("reqID").(string)
+	if !ok {
+		fmt.Println("Request ID not found in context")
+		return nil, fmt.Errorf("request ID not found in context")
+	}
+
+	message := map[string]string{
+		"hashkey":            hash,
+		"rate_limit_per_min": fmt.Sprintf("%d", input.RateLimitPerMinute),
+		"expires_at":         expiresAt.Format(time.RFC3339),
+		"disabled":           fmt.Sprintf("%t", token.Disabled),
+	}
+
+	if err = producer.NewProducer().PushMessage(reqID, message); err != nil {
+		fmt.Printf("Error pushing message to Kafka: %v\n", err)
 		return nil, err
 	}
 
-	token.Hashkey = hashkey.String() // Overwrite just for return
+	token.Hashkey = hashkey.String()
 
 	return token, nil
 }
