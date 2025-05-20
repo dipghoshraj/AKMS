@@ -18,6 +18,6 @@ type TokenCreateInput struct {
 }
 
 type TokenUpdateInput struct {
-	RateLimitPerMinute int64  `json:"rate_limit_per_minute" binding:"required"`
-	ExpiresAt          string `json:"expires_at" binding:"required"`
+	RateLimitPerMinute int64 `json:"rate_limit_per_minute" binding:"required"`
+	ExpiresAt          int   `json:"expires_at" binding:"required"`
 }

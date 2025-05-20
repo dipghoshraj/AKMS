@@ -16,6 +16,9 @@ type TokenOps interface {
 	Create(ctx context.Context, input *model.TokenCreateInput) (*model.Token, error)
 	GetAll(ctx context.Context) ([]*model.Token, error)
 	GetByKey(ctx context.Context, key string) (*model.Token, error)
+	Disable(ctx context.Context, key string) error
+	Update(ctx context.Context, key string, input *model.TokenUpdateInput) error
+	Delete(ctx context.Context, key string) error
 }
 
 func generateHash(tokenKey string) string {
@@ -40,10 +43,6 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 		ExpiresAt:          expiresAt,
 		Disabled:           false,
 	}
-
-	// if err := store.DataBase.WithContext(ctx).Create(token).Error; err != nil {
-	// 	return nil, err
-	// }
 
 	if err := to.db.WithContext(ctx).Create(token).Error; err != nil {
 		return nil, err
@@ -75,4 +74,28 @@ func (to *tokenOps) GetByKey(ctx context.Context, key string) (*model.Token, err
 		return nil, err
 	}
 	return &token, nil
+}
+
+func (to *tokenOps) Disable(ctx context.Context, key string) error {
+	hash := generateHash(key)
+	if err := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Update("disabled", true).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (to *tokenOps) Update(ctx context.Context, key string, input *model.TokenUpdateInput) error {
+	hash := generateHash(key)
+	if err := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Updates(input).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (to *tokenOps) Delete(ctx context.Context, key string) error {
+	hash := generateHash(key)
+	if err := to.db.WithContext(ctx).Where("hashkey = ?", hash).Delete(&model.Token{}).Error; err != nil {
+		return err
+	}
+	return nil
 }

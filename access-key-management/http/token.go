@@ -59,3 +59,21 @@ func (s *ServiceOps) getTokenPlan(w http.ResponseWriter, r *http.Request) {
 		Data:    token,
 	})
 }
+
+func (s *ServiceOps) disableTokenHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the token key from the URL parameters
+	accessKey := r.Header.Get("x-api-key")
+
+	// Disable the token in the database
+	err := s.tokenOps.Disable(r.Context(), accessKey)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to disable token")
+		return
+	}
+
+	// Return a success message in the response
+	respondWithJSON(w, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "Token disabled successfully",
+	})
+}

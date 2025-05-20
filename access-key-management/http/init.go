@@ -30,11 +30,13 @@ func SetupRoutes(router *mux.Router, service *ServiceOps) {
 	// Define your routes here
 
 	router.HandleFunc("/key/info", service.getTokenPlan).Methods("GET")
+	router.HandleFunc("/key/disable", service.disableTokenHandler).Methods("POST")
 
 	protected := router.PathPrefix("/admin").Subrouter()
 	protected.Use(JWTMiddleware)
 	protected.HandleFunc("/key", service.createTokenHandler).Methods("POST")
 	protected.HandleFunc("/key", service.getTokensHandler).Methods("GET")
+	// protected.HandleFunc("/keys/{key}", service.updateTokenHandler).Methods("PUT")
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
