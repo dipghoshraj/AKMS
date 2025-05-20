@@ -32,6 +32,7 @@ func ConsumeKafkaMessages(brokers []string, topic string) {
 		Topic:          topic,
 		MinBytes:       10e3,
 		MaxBytes:       10e6,
+		GroupID:        "my-group",
 		StartOffset:    kafka.LastOffset,
 		CommitInterval: 0,
 	})
@@ -52,6 +53,8 @@ func ConsumeKafkaMessages(brokers []string, topic string) {
 
 		var reqID string
 		for _, h := range msg.Headers {
+
+			log.Printf("Header: %s: %s\n", h.Key, string(h.Value))
 			if strings.ToLower(h.Key) == "request_id" {
 				reqID = string(h.Value)
 			}
