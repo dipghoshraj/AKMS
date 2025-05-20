@@ -96,7 +96,7 @@ func (s *ServiceOps) updateTokenHandler(w http.ResponseWriter, r *http.Request) 
 
 	token, err := s.tokenOps.Update(r.Context(), accessKey, &tokenRequest)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Failed to update token")
+		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

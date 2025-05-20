@@ -96,6 +96,7 @@ func (to *tokenOps) Update(ctx context.Context, key string, input *model.TokenUp
 
 	// Perform the update
 	result := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Updates(input)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
