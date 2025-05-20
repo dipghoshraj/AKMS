@@ -76,6 +76,7 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 	if err != nil {
 		return nil, err // transaction rolled back
 	}
+	token.Hashkey = hashkey.String()
 
 	return token, nil
 }
