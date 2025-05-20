@@ -58,11 +58,18 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 			return fmt.Errorf("request ID not found in context")
 		}
 
-		message := map[string]string{
-			"hashkey":            hash,
-			"rate_limit_per_min": fmt.Sprintf("%d", input.RateLimitPerMinute),
-			"expires_at":         expiresAt.Format(time.RFC3339),
-			"disabled":           fmt.Sprintf("%t", token.Disabled),
+		// message := map[string]string{
+		// 	"hashkey":            hash,
+		// 	"rate_limit_per_min": fmt.Sprintf("%d", input.RateLimitPerMinute),
+		// 	"expires_at":         expiresAt.Format(time.RFC3339),
+		// 	"disabled":           fmt.Sprintf("%t", token.Disabled),
+		// }
+
+		message := model.KafkaMessage{
+			HashKey:         hash,
+			RateLimitPerMin: token.RateLimitPerMinute,
+			ExpiresAt:       expiresAt,
+			Disabled:        token.Disabled,
 		}
 
 		if err = producer.NewProducer().PushMessage(reqID, message); err != nil {

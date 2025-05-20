@@ -2,6 +2,7 @@ package producer
 
 import (
 	"akm/config"
+	"akm/dbops/model"
 	"context"
 	"encoding/json"
 
@@ -35,7 +36,7 @@ func creation() *kafka.Writer {
 	return kafkaWriter
 }
 
-func (kf *kafkaProducer) PushMessage(request_id string, message map[string]string) error {
+func (kf *kafkaProducer) PushMessage(request_id string, message model.KafkaMessage) error {
 
 	jsonData, err := json.Marshal(message)
 	if err != nil {
