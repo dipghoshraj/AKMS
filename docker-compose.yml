@@ -1,0 +1,44 @@
+
+services:
+    # postgres:
+    #     image: postgres:15
+    #     container_name: postgres
+    #     restart: always
+    #     ports:
+    #     - "5432:5432"
+    #     environment:
+    #         POSTGRES_USER: postgres
+    #         POSTGRES_PASSWORD: password
+    #     volumes:
+    #     - postgres_data:/var/lib/postgresql/data
+    #     command: >
+    #         bash -c "
+    #             docker-entrypoint.sh postgres &
+    #             sleep 5 &&
+    #             psql -U postgres -c 'CREATE DATABASE access_key_db;' &&
+    #             psql -U postgres -c 'CREATE DATABASE token_info_db;' &&
+    #             wait
+    #         "
+
+    db1:
+        image: postgres:15
+        container_name: postgres_db1
+        environment:
+            POSTGRES_USER: user1
+            POSTGRES_PASSWORD: pass1
+            POSTGRES_DB: db1
+        ports:
+            - "5433:5432"  # External port 5433 maps to internal 5432
+
+    db2:
+        image: postgres:15
+        container_name: postgres_db2
+        environment:
+            POSTGRES_USER: user2
+            POSTGRES_PASSWORD: pass2
+            POSTGRES_DB: db2
+        ports:
+            - "5434:5432"  # External port 5434 maps to internal 5432
+
+volumes:
+    postgres_data:

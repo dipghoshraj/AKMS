@@ -3,8 +3,11 @@ package main
 import (
 	"akm/dbops"
 	"akm/store"
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 	"time"
 
 	"akm/config"
@@ -24,6 +27,7 @@ func setupRouter(service *http.ServiceOps) *mux.Router {
 func main() {
 	fmt.Println("Hello, World!")
 	store.InitDB()
+	Migrate()
 
 	repoOps := dbops.NewOpsManager(store.DataBase)
 	service := http.NewServiceOps(repoOps)
@@ -45,4 +49,20 @@ func main() {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Failed to gracefully shutdown: %v\n", err)
+	}
+
+	log.Println("Server exited properly")
+
 }

@@ -19,10 +19,10 @@ func NewServiceOps(ops *dbops.OpsManager) *ServiceOps {
 }
 
 type APIResponse struct {
-	Success bool        `json:"success"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
 func SetupRoutes(router *mux.Router, service *ServiceOps) {
