@@ -17,10 +17,10 @@ func InitDB() {
 	connectionString := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		GetEnv("DB_HOST", "localhost"),
-		GetEnv("DB_USER", "postgres"),
+		GetEnv("DB_USER", "user"),
 		GetEnv("DB_PASSWORD", "password"),
-		GetEnv("DB_NAME", "users"),
-		GetEnv("DB_PORT", "5433"),
+		GetEnv("DB_NAME", "servic_db_2"),
+		GetEnv("DB_PORT", "5434"),
 	)
 
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{
