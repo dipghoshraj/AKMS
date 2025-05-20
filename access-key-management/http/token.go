@@ -4,6 +4,8 @@ import (
 	"akm/dbops/model"
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func (s *ServiceOps) createTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,5 +77,31 @@ func (s *ServiceOps) disableTokenHandler(w http.ResponseWriter, r *http.Request)
 	respondWithJSON(w, http.StatusOK, APIResponse{
 		Success: true,
 		Message: "Token disabled successfully",
+	})
+}
+
+func (s *ServiceOps) updateTokenHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the token key from the URL parameters
+	accessKey := mux.Vars(r)["key"]
+	if accessKey == "" {
+		respondWithError(w, http.StatusInternalServerError, "Token key is required")
+		return
+	}
+
+	var tokenRequest model.TokenUpdateInput
+	if err := json.NewDecoder(r.Body).Decode(&tokenRequest); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	token, err := s.tokenOps.Update(r.Context(), accessKey, &tokenRequest)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to update token")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, APIResponse{
+		Success: true,
+		Data:    token,
 	})
 }

@@ -17,7 +17,7 @@ type TokenOps interface {
 	GetAll(ctx context.Context) ([]*model.Token, error)
 	GetByKey(ctx context.Context, key string) (*model.Token, error)
 	Disable(ctx context.Context, key string) error
-	Update(ctx context.Context, key string, input *model.TokenUpdateInput) error
+	Update(ctx context.Context, key string, input *model.TokenUpdateInput) (*model.Token, error)
 	Delete(ctx context.Context, key string) error
 }
 
@@ -78,24 +78,52 @@ func (to *tokenOps) GetByKey(ctx context.Context, key string) (*model.Token, err
 
 func (to *tokenOps) Disable(ctx context.Context, key string) error {
 	hash := generateHash(key)
-	if err := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Update("disabled", true).Error; err != nil {
-		return err
+
+	result := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Update("disabled", true)
+	if result.Error != nil {
+		return result.Error
 	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("token not found")
+	}
+
 	return nil
 }
 
-func (to *tokenOps) Update(ctx context.Context, key string, input *model.TokenUpdateInput) error {
+func (to *tokenOps) Update(ctx context.Context, key string, input *model.TokenUpdateInput) (*model.Token, error) {
 	hash := generateHash(key)
-	if err := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Updates(input).Error; err != nil {
-		return err
+
+	// Perform the update
+	result := to.db.WithContext(ctx).Model(&model.Token{}).Where("hashkey = ?", hash).Updates(input)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return nil
+
+	if result.RowsAffected == 0 {
+		return nil, fmt.Errorf("token not found")
+	}
+
+	// Fetch and return the updated token
+	var token model.Token
+	if err := to.db.WithContext(ctx).Where("hashkey = ?", hash).First(&token).Error; err != nil {
+		return nil, err
+	}
+
+	return &token, nil
 }
 
 func (to *tokenOps) Delete(ctx context.Context, key string) error {
 	hash := generateHash(key)
-	if err := to.db.WithContext(ctx).Where("hashkey = ?", hash).Delete(&model.Token{}).Error; err != nil {
-		return err
+
+	result := to.db.WithContext(ctx).Where("hashkey = ?", hash).Delete(&model.Token{})
+	if result.Error != nil {
+		return result.Error
 	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("token not found")
+	}
+
 	return nil
 }
