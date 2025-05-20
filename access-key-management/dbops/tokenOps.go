@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type TokenOps interface {
@@ -44,32 +45,37 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 		Disabled:           false,
 	}
 
-	if err := to.db.WithContext(ctx).Create(token).Error; err != nil {
-		return nil, err
-	}
+	err = to.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
-	if err := to.db.Find(&token).Error; err != nil {
-		return nil, err
-	}
-	reqID, ok := ctx.Value("reqID").(string)
-	if !ok {
-		fmt.Println("Request ID not found in context")
-		return nil, fmt.Errorf("request ID not found in context")
-	}
+		// DB insert
+		if err := tx.Create(token).Error; err != nil {
+			return fmt.Errorf("error creating token: %w", err)
+		}
 
-	message := map[string]string{
-		"hashkey":            hash,
-		"rate_limit_per_min": fmt.Sprintf("%d", input.RateLimitPerMinute),
-		"expires_at":         expiresAt.Format(time.RFC3339),
-		"disabled":           fmt.Sprintf("%t", token.Disabled),
-	}
+		reqID, ok := ctx.Value("reqID").(string)
+		if !ok {
+			fmt.Println("Request ID not found in context")
+			return fmt.Errorf("request ID not found in context")
+		}
 
-	if err = producer.NewProducer().PushMessage(reqID, message); err != nil {
-		fmt.Printf("Error pushing message to Kafka: %v\n", err)
-		return nil, err
-	}
+		message := map[string]string{
+			"hashkey":            hash,
+			"rate_limit_per_min": fmt.Sprintf("%d", input.RateLimitPerMinute),
+			"expires_at":         expiresAt.Format(time.RFC3339),
+			"disabled":           fmt.Sprintf("%t", token.Disabled),
+		}
 
-	token.Hashkey = hashkey.String()
+		if err = producer.NewProducer().PushMessage(reqID, message); err != nil {
+			fmt.Printf("Error pushing message to Kafka: %v\n", err)
+			return fmt.Errorf("error pushing message to Kafka: %w", err)
+		}
+
+		return nil // commit the transaction
+	})
+
+	if err != nil {
+		return nil, err // transaction rolled back
+	}
 
 	return token, nil
 }
