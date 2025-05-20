@@ -37,6 +37,7 @@ func SetupRoutes(router *mux.Router, service *ServiceOps) {
 	protected.HandleFunc("/key", service.createTokenHandler).Methods("POST")
 	protected.HandleFunc("/key", service.getTokensHandler).Methods("GET")
 	protected.HandleFunc("/keys/{key}", service.updateTokenHandler).Methods("PUT")
+	protected.HandleFunc("/keys/{key}", service.deleteTokenHandler).Methods("DELETE")
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {

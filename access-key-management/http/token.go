@@ -105,3 +105,23 @@ func (s *ServiceOps) updateTokenHandler(w http.ResponseWriter, r *http.Request) 
 		Data:    token,
 	})
 }
+
+func (s *ServiceOps) deleteTokenHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the token key from the URL parameters
+	accessKey := mux.Vars(r)["key"]
+	if accessKey == "" {
+		respondWithError(w, http.StatusInternalServerError, "Token key is required")
+		return
+	}
+
+	err := s.tokenOps.Delete(r.Context(), accessKey)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to delete token")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, APIResponse{
+		Success: true,
+		Message: "Token deleted successfully",
+	})
+}
