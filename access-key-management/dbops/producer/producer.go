@@ -1,6 +1,7 @@
 package producer
 
 import (
+	"akm/config"
 	"context"
 	"encoding/json"
 
@@ -24,11 +25,11 @@ also need to user defer for writer close
 
 func creation() *kafka.Writer {
 
-	kafkaURL := "localhost:9092"
+	kafkaURL := config.GetEnv("KAFKA_URL", "localhost:9092")
 
 	kafkaWriter := &kafka.Writer{
 		Addr:     kafka.TCP(kafkaURL),
-		Topic:    "service",
+		Topic:    config.GetEnv("KAFKA_TOPIC", "akm"),
 		Balancer: &kafka.LeastBytes{},
 	}
 	return kafkaWriter
