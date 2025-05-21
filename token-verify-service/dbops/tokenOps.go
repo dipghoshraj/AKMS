@@ -99,18 +99,22 @@ func (t *tokenOps) GetRedisToken(ctx context.Context, key string) (bool, error) 
 
 	cached, err := t.redis.Get(ctx, hashkey).Result()
 	if err == nil {
-
 		if err := json.Unmarshal([]byte(cached), &meta); err == nil {
 			if meta.Disabled || meta.ExpiresAt.Before(time.Now()) {
 				log.Printf("[request_id=%s] Token is disabled or expired: %s", key, err)
 				return false, fmt.Errorf("token is disable or expired")
 			}
-			return true, nil
 		}
 	}
 
+	if err != nil {
+		log.Printf("[request_id=%s] Failed to get token from Redis: %v", key, err)
+	}
+
+	// If Redis cache is empty or error, fetch from DB
+
 	log.Printf("[request_id=%s] Failed to get token from Redis: %v", key, err)
-	if err := t.db.WithContext(ctx).Where("hashkey = ?", key).First(&token).Error; err != nil {
+	if err := t.db.WithContext(ctx).Where("hashkey = ?", hashkey).First(&token).Error; err != nil {
 		log.Printf("[request_id=%s] Failed to find token: %v", key, err)
 		return false, fmt.Errorf("token not found")
 	}
@@ -120,6 +124,12 @@ func (t *tokenOps) GetRedisToken(ctx context.Context, key string) (bool, error) 
 		return false, fmt.Errorf("token is disable or expired")
 	}
 
+	// Update Redis with the token information
+	if err := t.setRedis(ctx, hashkey, ""); err != nil {
+		log.Printf("[request_id=%s] Failed to set token in Redis: %v", "", err)
+	}
+
+	// Check rate limit
 	rateExceed, err := t.CheckRateLimit(ctx, key, token.RateLimitPerMinute)
 	if err != nil {
 		log.Printf("[request_id=%s] Failed to check rate limit: %v", key, err)
@@ -142,6 +152,12 @@ func (t *tokenOps) CheckRateLimit(ctx context.Context, key string, limit int64) 
 		log.Printf("[request_id=%s] Failed to get rate limit: %v", key, err)
 		return false, err
 	}
+
+	if rateLimit == 1 {
+		t.redis.Expire(ctx, rateKey, time.Minute) // set TTL only on first hit
+	}
+
+	log.Printf("[request_id=%s] Rate limit for token %s: %d current limit: %d", key, rateKey, rateLimit, limit)
 
 	if rateLimit > limit {
 		return true, nil
