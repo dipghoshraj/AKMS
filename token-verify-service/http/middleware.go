@@ -12,21 +12,21 @@ func (s *Server) TokenMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		valid, err := s.tokenOps.GetRedisToken(r.Context(), authHeader)
+		valid, limit, err := s.tokenOps.GetRedisToken(r.Context(), authHeader)
 		if !valid {
-			if err != nil && err.Error() == "rate limit exceeded" {
-				http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
-				return
-			}
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
+		rateExceed, err := s.tokenOps.CheckRateLimit(r.Context(), authHeader, limit)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusTooManyRequests)
 			return
 		}
-
+		if rateExceed {
+			http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
