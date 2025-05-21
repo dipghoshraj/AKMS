@@ -39,20 +39,25 @@ func processMessage(ctx context.Context, msg kafka.Message) error {
 	// Keeping the event is seprate types to scale it later
 
 	switch message.EventType {
-	case "create":
-		if err := dbops.TokenOps.Save(ctx, &token); err != nil {
+	case "event.create":
+		if err := dbops.TokenOps.Save(ctx, reqID, &token); err != nil {
 			log.Printf("[request_id=%s] Failed to create token: %v", reqID, err)
 			return fmt.Errorf("failed to create token")
 		}
 		log.Printf("[request_id=%s] Token created successfully: %v", reqID, token)
-	case "update":
-		if err := dbops.TokenOps.Save(ctx, &token); err != nil {
+	case "event.update":
+		if err := dbops.TokenOps.Save(ctx, reqID, &token); err != nil {
 			log.Printf("[request_id=%s] Failed to update token: %v", reqID, err)
 			return fmt.Errorf("failed to update token")
 		}
 		log.Printf("[request_id=%s] Token updated successfully: %v", reqID, token)
-	case "disabled":
-		if err := dbops.TokenOps.Save(ctx, &token); err != nil {
+	case "event.disable":
+		disableMessage := model.DisableMessage{
+			HashKey:  message.HashKey,
+			Disabled: message.Disabled,
+			ReqID:    reqID,
+		}
+		if err := dbops.TokenOps.DisableToken(ctx, disableMessage); err != nil {
 			log.Printf("[request_id=%s] Failed to disable token: %v", reqID, err)
 			return fmt.Errorf("failed to disable token")
 		}
