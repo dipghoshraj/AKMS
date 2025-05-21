@@ -32,7 +32,7 @@ func (c *Consumer) ConsumeKafkaMessages() {
 		MinBytes:       10e3,
 		MaxBytes:       10e6,
 		GroupID:        "my-group",
-		StartOffset:    kafka.LastOffset,
+		StartOffset:    kafka.LastOffset, // for simplicity, start from the latest offset in scale we should use kafka.FirstOffset
 		CommitInterval: 0,
 	})
 

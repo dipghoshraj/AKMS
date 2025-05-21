@@ -24,6 +24,14 @@ func (t *tokenOps) Save(ctx context.Context, reqID string, token *model.Token) e
 		if err := t.SetRedis(ctx, token.Hashkey, reqID); err != nil {
 			log.Printf("[request_id=%s] Failed to set token in Redis: %v", reqID, err)
 		}
+
+		rateKey := fmt.Sprintf("rate_limit:%s", token.Hashkey)
+		_, err := t.redis.Incr(ctx, rateKey).Result()
+		if err != nil {
+			log.Printf("[request_id=%s] Failed to increment rate limit: %v", reqID, err)
+			return
+		}
+		t.redis.Expire(ctx, rateKey, time.Minute)
 	}()
 	return nil
 }

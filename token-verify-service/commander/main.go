@@ -25,6 +25,7 @@ func setupRouter(service *rest.Server) *mux.Router {
 
 func main() {
 	store.InitDB()
+	store.InitRedis()
 	Migrate()
 
 	// Rest API setup
