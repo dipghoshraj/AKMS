@@ -8,3 +8,9 @@ type Token struct {
 	Disabled           bool      `gorm:"not null" json:"disabled"`
 	RateLimitPerMinute int64     `gorm:"not null" json:"rate_limit_per_min"`
 }
+
+type RedisMeta struct {
+	Disabled  bool      `json:"disabled"`
+	ExpiresAt time.Time `json:"expires_at"`
+	RateLimit int64     `json:"rate_limit_per_min"`
+}

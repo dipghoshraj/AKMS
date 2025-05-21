@@ -17,6 +17,6 @@ func NewServerOps(ops *dbops.OpsManager) *Server {
 }
 
 func SetupRoutes(router *mux.Router, service *Server) {
-	router.Use(RateMiddleware)
+	router.Use(service.TokenMiddleware)
 	router.HandleFunc("/price", service.getPrice).Methods("GET")
 }
