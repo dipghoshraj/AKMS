@@ -13,7 +13,7 @@ Build two independent but collaborative microservices communicating via Kafka, h
 ## 🧱 High-Level Architecture
 
 
-```
+```mermaid
 graph TD
 
 User[🧑 Admin / User]
