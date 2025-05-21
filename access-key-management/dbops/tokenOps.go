@@ -58,18 +58,13 @@ func (to *tokenOps) Create(ctx context.Context, input *model.TokenCreateInput) (
 			return fmt.Errorf("request ID not found in context")
 		}
 
-		// message := map[string]string{
-		// 	"hashkey":            hash,
-		// 	"rate_limit_per_min": fmt.Sprintf("%d", input.RateLimitPerMinute),
-		// 	"expires_at":         expiresAt.Format(time.RFC3339),
-		// 	"disabled":           fmt.Sprintf("%t", token.Disabled),
-		// }
-
 		message := model.KafkaMessage{
 			HashKey:         hash,
 			RateLimitPerMin: token.RateLimitPerMinute,
 			ExpiresAt:       expiresAt,
 			Disabled:        token.Disabled,
+			EventType:       "event.create",
+			ReqID:           reqID,
 		}
 
 		if err = producer.NewProducer().PushMessage(reqID, message); err != nil {
@@ -115,6 +110,24 @@ func (to *tokenOps) Disable(ctx context.Context, key string) error {
 		return result.Error
 	}
 
+	reqID, ok := ctx.Value("reqID").(string)
+	if !ok {
+		fmt.Println("Request ID not found in context")
+		return fmt.Errorf("request ID not found in context")
+	}
+
+	message := model.KafkaMessage{
+		HashKey:   hash,
+		Disabled:  true,
+		EventType: "event.disable",
+		ReqID:     reqID,
+	}
+
+	if err := producer.NewProducer().PushMessage(reqID, message); err != nil {
+		fmt.Printf("Error pushing message to Kafka: %v\n", err)
+		return fmt.Errorf("error pushing message to Kafka: %w", err)
+	}
+
 	if result.RowsAffected == 0 {
 		return fmt.Errorf("token not found")
 	}
@@ -142,6 +155,23 @@ func (to *tokenOps) Update(ctx context.Context, key string, input *model.TokenUp
 		return nil, err
 	}
 
+	reqID, ok := ctx.Value("reqID").(string)
+	if !ok {
+		fmt.Println("Request ID not found in context")
+		return nil, fmt.Errorf("request ID not found in context")
+	}
+
+	message := model.KafkaMessage{
+		HashKey:         hash,
+		RateLimitPerMin: token.RateLimitPerMinute,
+		ExpiresAt:       token.ExpiresAt,
+		EventType:       "event.update",
+		ReqID:           reqID,
+	}
+	if err := producer.NewProducer().PushMessage(reqID, message); err != nil {
+		fmt.Printf("Error pushing message to Kafka: %v\n", err)
+		return nil, fmt.Errorf("error pushing message to Kafka: %w", err)
+	}
 	return &token, nil
 }
 
