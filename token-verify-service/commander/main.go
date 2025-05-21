@@ -55,7 +55,7 @@ func main() {
 
 		topic := "akm"
 		consumer := consumer.NewComsumer(brokers, topic, dataops)
-		consumer.ConsumeKafkaMessages(brokers, topic)
+		consumer.ConsumeKafkaMessages()
 	}()
 	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
