@@ -142,8 +142,6 @@ TokenService --> Redis
 
 ---
 
----
-
 ## ✅ Final Notes
 
 - Microservices are **isolated**, **asynchronous**, and **stateless**
