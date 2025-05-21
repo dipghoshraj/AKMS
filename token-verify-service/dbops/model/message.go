@@ -10,3 +10,10 @@ type KafkaMessage struct {
 	EventType       string    `json:"event_type"`
 	ReqID           string    `json:"request_id"`
 }
+
+type DisableMessage struct {
+	HashKey   string `json:"hashkey"`
+	Disabled  bool   `json:"disabled"`
+	EventType string `json:"event_type"`
+	ReqID     string `json:"request_id"`
+}

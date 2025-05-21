@@ -165,9 +165,11 @@ func (to *tokenOps) Update(ctx context.Context, key string, input *model.TokenUp
 		HashKey:         hash,
 		RateLimitPerMin: token.RateLimitPerMinute,
 		ExpiresAt:       token.ExpiresAt,
+		Disabled:        token.Disabled,
 		EventType:       "event.update",
 		ReqID:           reqID,
 	}
+
 	if err := producer.NewProducer().PushMessage(reqID, message); err != nil {
 		fmt.Printf("Error pushing message to Kafka: %v\n", err)
 		return nil, fmt.Errorf("error pushing message to Kafka: %w", err)

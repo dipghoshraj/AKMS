@@ -36,6 +36,8 @@ func processMessage(ctx context.Context, msg kafka.Message) error {
 		RateLimitPerMinute: message.RateLimitPerMin,
 	}
 
+	// Keeping the event is seprate types to scale it later
+
 	switch message.EventType {
 	case "create":
 		if err := dbops.TokenOps.Save(ctx, &token); err != nil {
