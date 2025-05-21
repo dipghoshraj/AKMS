@@ -13,7 +13,7 @@ var RedisClient *redis.Client
 
 func InitRedis() error {
 	client := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", GetEnv("REDIS_HOST", "localhost"), GetEnv("REDIS_PORT", "6379")),
+		Addr:     fmt.Sprintf("%s:%s", GetEnv("REDIS_HOST", ""), GetEnv("REDIS_PORT", "")),
 		Password: GetEnv("REDIS_PASSWORD", ""),
 		DB:       0,
 	})

@@ -84,6 +84,27 @@ services:
 
         env_file:
         - ./access-key-management/.env
+
+    service_2:
+        build:
+            context: ./token-verify-service
+            dockerfile: Dockerfile
+
+        container_name: go_service_2
+        ports:
+            - "8082:8000"
+        depends_on:
+            servic_db_1:
+                condition: service_healthy
+            servic_db_2:
+                condition: service_healthy
+            kafka:
+                condition: service_started
+            redis:
+                condition: service_healthy
+
+        env_file:
+        - ./token-verify-service/.env
             
 
 volumes:

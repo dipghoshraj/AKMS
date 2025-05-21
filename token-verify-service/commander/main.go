@@ -52,9 +52,9 @@ func main() {
 	go func() {
 		// kafka consumer setup
 		fmt.Println("Starting Kafka Consumer...")
-		brokers := []string{"localhost:9092"}
+		brokers := []string{store.GetEnv("KAFKA_BROKER", "localhost:9092")}
 
-		topic := "akm"
+		topic := store.GetEnv("KAFKA_TOPIC", "akm")
 		consumer := consumer.NewComsumer(brokers, topic, dataops)
 		consumer.ConsumeKafkaMessages()
 	}()

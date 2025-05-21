@@ -17,7 +17,7 @@ func InitDB() {
 	connectionString := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		GetEnv("DB_HOST", "localhost"),
-		GetEnv("DB_USER", "user"),
+		GetEnv("DB_USER", "dip"),
 		GetEnv("DB_PASSWORD", "password"),
 		GetEnv("DB_NAME", "servic_db_2"),
 		GetEnv("DB_PORT", "5434"),
