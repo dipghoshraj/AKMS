@@ -28,7 +28,7 @@ func main() {
 	Migrate()
 
 	// Rest API setup
-	dataops := dbops.NewOpsManager(store.DataBase)
+	dataops := dbops.NewOpsManager(store.DataBase, store.RedisClient)
 	services := rest.NewServerOps(dataops)
 
 	router := setupRouter(services)
@@ -54,6 +54,7 @@ func main() {
 		brokers := []string{"localhost:9092"}
 
 		topic := "akm"
+		consumer := consumer.NewComsumer(brokers, topic, dataops)
 		consumer.ConsumeKafkaMessages(brokers, topic)
 	}()
 	// Graceful shutdown

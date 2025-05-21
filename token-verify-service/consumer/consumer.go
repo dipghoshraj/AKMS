@@ -12,7 +12,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func ConsumeKafkaMessages(brokers []string, topic string) {
+func (c *Consumer) ConsumeKafkaMessages() {
 	// Create a new Kafka reader
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -27,8 +27,8 @@ func ConsumeKafkaMessages(brokers []string, topic string) {
 	}()
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        brokers,
-		Topic:          topic,
+		Brokers:        c.brokers,
+		Topic:          c.Topic,
 		MinBytes:       10e3,
 		MaxBytes:       10e6,
 		GroupID:        "my-group",
@@ -50,7 +50,7 @@ func ConsumeKafkaMessages(brokers []string, topic string) {
 			continue
 		}
 
-		if err := processMessage(ctx, msg); err != nil {
+		if err := c.processMessage(ctx, msg); err != nil {
 			log.Printf("Error processing message: %v", err)
 			// TODO: Use dead-letter queue or retry logic
 			continue

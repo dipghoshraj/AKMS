@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"log"
 
-	"tvs/dbops"
 	"tvs/dbops/model"
-	"tvs/store"
 
 	"github.com/segmentio/kafka-go"
 )
 
 // TODO: imlement the database operation interface properly
 // processMessage processes a Kafka message and stores the token in the database.
-func processMessage(ctx context.Context, msg kafka.Message) error {
+func (c *Consumer) processMessage(ctx context.Context, msg kafka.Message) error {
 	var message model.KafkaMessage
 	if err := json.Unmarshal(msg.Value, &message); err != nil {
 		return fmt.Errorf("invalid message format")
@@ -28,7 +26,6 @@ func processMessage(ctx context.Context, msg kafka.Message) error {
 		return fmt.Errorf("hashkey is required")
 	}
 
-	dbops := dbops.NewOpsManager(store.DataBase)
 	token := model.Token{
 		Hashkey:            message.HashKey,
 		ExpiresAt:          message.ExpiresAt,
@@ -40,13 +37,13 @@ func processMessage(ctx context.Context, msg kafka.Message) error {
 
 	switch message.EventType {
 	case "event.create":
-		if err := dbops.TokenOps.Save(ctx, reqID, &token); err != nil {
+		if err := c.tokenOps.Save(ctx, reqID, &token); err != nil {
 			log.Printf("[request_id=%s] Failed to create token: %v", reqID, err)
 			return fmt.Errorf("failed to create token")
 		}
 		log.Printf("[request_id=%s] Token created successfully: %v", reqID, token)
 	case "event.update":
-		if err := dbops.TokenOps.Save(ctx, reqID, &token); err != nil {
+		if err := c.tokenOps.Save(ctx, reqID, &token); err != nil {
 			log.Printf("[request_id=%s] Failed to update token: %v", reqID, err)
 			return fmt.Errorf("failed to update token")
 		}
@@ -57,7 +54,7 @@ func processMessage(ctx context.Context, msg kafka.Message) error {
 			Disabled: message.Disabled,
 			ReqID:    reqID,
 		}
-		if err := dbops.TokenOps.DisableToken(ctx, disableMessage); err != nil {
+		if err := c.tokenOps.DisableToken(ctx, disableMessage); err != nil {
 			log.Printf("[request_id=%s] Failed to disable token: %v", reqID, err)
 			return fmt.Errorf("failed to disable token")
 		}
