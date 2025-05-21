@@ -6,10 +6,10 @@ import (
 )
 
 type TokenOps interface {
-	Create(ctx context.Context, input *model.Token) error
+	Save(ctx context.Context, input *model.Token) error
 }
 
-func (t *tokenOps) Create(ctx context.Context, input *model.Token) error {
+func (t *tokenOps) Save(ctx context.Context, input *model.Token) error {
 	token := &model.Token{
 		Hashkey:            input.Hashkey,
 		RateLimitPerMinute: input.RateLimitPerMinute,
@@ -17,9 +17,8 @@ func (t *tokenOps) Create(ctx context.Context, input *model.Token) error {
 		Disabled:           input.Disabled,
 	}
 
-	if err := t.db.WithContext(ctx).Create(token).Error; err != nil {
+	if err := t.db.WithContext(ctx).Save(token).Error; err != nil {
 		return err
 	}
-
 	return nil
 }

@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -51,27 +50,17 @@ func ConsumeKafkaMessages(brokers []string, topic string) {
 			continue
 		}
 
-		var reqID string
-		for _, h := range msg.Headers {
-
-			log.Printf("Header: %s: %s\n", h.Key, string(h.Value))
-			if strings.ToLower(h.Key) == "request_id" {
-				reqID = string(h.Value)
-			}
-		}
-		log.Printf("[request_id=%s] Fetched message: %s", reqID, string(msg.Value))
-
-		if err := processMessage(ctx, reqID, msg); err != nil {
-			log.Printf("[request_id=%s] Error processing message: %v", reqID, err)
+		if err := processMessage(ctx, msg); err != nil {
+			log.Printf("Error processing message: %v", err)
 			// TODO: Use dead-letter queue or retry logic
 			continue
 		}
 
 		// commit the message
 		if err := reader.CommitMessages(ctx, msg); err != nil {
-			log.Printf("[request_id=%s] Failed to commit offset: %v", reqID, err)
+			log.Printf("Failed to commit offset: %v", err)
 		} else {
-			log.Printf("[request_id=%s] Offset committed", reqID)
+			log.Printf("Offset committed")
 		}
 
 	}
