@@ -10,6 +10,11 @@ Ensure you have the following installed:
 
 ---
 
+## System Arch
+Please refer to the [System design](https://github.com/dipghoshraj/AKMS#system-design/SYSTEM.md) for system design docs
+
+--
+
 ## 🚀 Quick Setup (via Docker Compose)
 
 ### 1. Clone the Repository
